@@ -17,7 +17,7 @@ public class Main {
 
         List<Subscriber> all = dao.findAll();
 
-        System.out.println("---Starting Workshop Processing---");
+        System.out.println("---Subscription List Management System---");
         System.out.println("---1. Active Subscriber---");
 
         // Defining filter for active users
@@ -30,10 +30,43 @@ public class Main {
             System.out.println("User: " + subscriber.getEmail());
         }
 
-        System.out.println();
-        System.out.println("---2. Expiring Subscription---");
+        System.out.println("\n---2. Expiring Subscription---");
 
+        // Define filter
+        SubscriberFilter expiringFilter = subscriber -> subscriber.getMonthsRemaining() <= 1;
 
+        // Process
+        List<Subscriber> expiringUsers = processor.findSubscribers(all,expiringFilter);
+
+        // Print
+        for (Subscriber subscriber : expiringUsers) {
+            System.out.println("User: " + subscriber.getEmail() + " | Months Left: " +
+                    subscriber.getMonthsRemaining());
+        }
+
+        System.out.println("\n---3. Active and Expiring Subscriber---");
+
+        // Define Filter (Combining 2 conditions using '&&')
+        SubscriberFilter activeAndExpiring = subscriber -> subscriber.isActive() &&
+                subscriber.getMonthsRemaining() <= 1;
+
+        // Process
+        List<Subscriber> urgentUsers = processor.findSubscribers(all,activeAndExpiring);
+
+        // Print
+        for (Subscriber subscriber : urgentUsers) {
+            System.out.println("Urgent Update neede for: " + subscriber.getEmail());
+        }
+
+        System.out.println("\n---Subscriber By Plan---");
+
+        SubscriberFilter proFilter = subscriber -> subscriber.getPlan() == Plan.PRO;
+
+        List<Subscriber> proUsers = processor.findSubscribers(all,proFilter);
+
+        for (Subscriber subscriber : proUsers) {
+            System.out.println("PRO Member: " + subscriber.getEmail());
+        }
 
 
     }
