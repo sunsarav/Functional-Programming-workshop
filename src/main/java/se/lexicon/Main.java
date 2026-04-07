@@ -10,8 +10,8 @@ public class Main {
         SubscriberProcessor processor = new SubscriberProcessor();
 
         // Adding the Subscribers to the list
-        dao.save(new Subscriber(1,"shamu@lexicon.com",Plan.PRO,true,7));
-        dao.save(new Subscriber(2,"ragavi@lexicon.com",Plan.FREE,false,5));
+        dao.save(new Subscriber(1,"shamu@lexicon.com",Plan.FREE,true,7));
+        dao.save(new Subscriber(2,"ragavi@lexicon.com",Plan.PRO,false,5));
         dao.save(new Subscriber(3,"sikdar@lexicon.com",Plan.BASIC,true,1));
         dao.save(new Subscriber(4,"muthana@lexicon.com",Plan.PRO,false,2));
 
@@ -58,7 +58,7 @@ public class Main {
             System.out.println("Urgent Update neede for: " + subscriber.getEmail());
         }
 
-        System.out.println("\n---Subscriber By Plan---");
+        System.out.println("\n---4. Subscriber By Plan---");
 
         SubscriberFilter proFilter = subscriber -> subscriber.getPlan() == Plan.PRO;
 
@@ -68,6 +68,51 @@ public class Main {
             System.out.println("PRO Member: " + subscriber.getEmail());
         }
 
+        System.out.println("\n---5. Paying Subscriber---");
+
+        // Filter: Whose plan is not "FREE"
+        List<Subscriber> payingUsers = processor.findSubscribers(all,subscriber ->
+                subscriber.getPlan() != Plan.FREE);
+
+        for (Subscriber subscriber : payingUsers) {
+            System.out.println("Paid Users: " + subscriber.getEmail() + " ( " +
+                    subscriber.getPlan() + " ) ");
+        }
+
+        System.out.println("\n---6. Extending Subscription (Adding 12 months to PRO)---");
+
+        // Applying the filter and action to a specific group
+        processor.applyToMatching(all,
+                // Filter - Only for PRO memebers
+                subscriber -> subscriber.getPlan() == Plan.PRO,
+                // Adding 12 months
+                subscriber -> subscriber.setMonthsRemaining(subscriber.getMonthsRemaining()+ 12)
+        );
+
+        // Print Results to verify the extension
+        for (Subscriber subscriber : all) {
+            if (subscriber.getPlan() == Plan.PRO) {
+        System.out.println("Extended: " + subscriber.getEmail() + "now has" +
+                subscriber.getMonthsRemaining() + "months");
+            }
+        }
+
+        System.out.println("\n---Deactivate Subscriber (Set to false if 0 months)---");
+
+        // Define filter (0 months) and the Action (setActive False)
+        processor.applyToMatching(all,
+                // Filter: No months left
+                subscriber -> subscriber.getMonthsRemaining() == 0,
+                // Action: Deactivate
+                subscriber -> subscriber.setActive(false)
+        );
+        // Print final status of all Users
+        System.out.println("\n---Final System Status---");
+        for (Subscriber subscriber : all) {
+            String status = subscriber.isActive() ? "ACTIVE" : "INACTIVE";
+            System.out.println("User: " + subscriber.getEmail() + " | Status: " + status +
+                    " | Months: " + subscriber.getMonthsRemaining());
+        }
 
     }
 }
